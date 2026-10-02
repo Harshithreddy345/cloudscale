@@ -5,9 +5,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestControllerAdvice
 public class StorageErrorHandler {
+    private static final Logger log = LoggerFactory.getLogger(StorageErrorHandler.class);
+    @ExceptionHandler(MetadataUnavailableException.class)
+    public ProblemDetail metadataUnavailable(MetadataUnavailableException failure) {
+        log.warn("Job metadata request failed", failure);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+                "Job metadata is unavailable. Try again later.");
+    }
     @ExceptionHandler(IOException.class)
     public ProblemDetail unavailable(IOException failure) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,

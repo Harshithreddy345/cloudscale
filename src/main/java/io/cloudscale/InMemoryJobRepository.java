@@ -1,10 +1,12 @@
 package io.cloudscale;
 import org.springframework.stereotype.Repository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Repository
+@ConditionalOnProperty(name = "cloudscale.metadata", havingValue = "memory", matchIfMissing = true)
 public class InMemoryJobRepository implements JobRepository {
     private final Map<UUID, Job> jobs = new ConcurrentHashMap<>();
     public void create(Job job) {

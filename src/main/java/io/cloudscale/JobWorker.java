@@ -12,14 +12,24 @@ public class JobWorker {
     private final SalesProcessor processor;
     public JobWorker(JobRepository jobs, FileStore files, SalesProcessor processor) { this.jobs = jobs; this.files = files; this.processor = processor; }
     public void process(UUID id) {
-        if (!jobs.transition(id, Job.Status.QUEUED, Job.Status.PROCESSING, null)) return;
+        try {
+            if (!jobs.transition(id, Job.Status.QUEUED, Job.Status.PROCESSING, null)) return;
+        } catch (MetadataUnavailableException e) {
+            log.warn("jobId={} claim could not be confirmed; reconciliation required", id, e);
+            return;
+        }
         try (var input = files.openInput(id)) {
             files.saveResult(id, processor.process(input));
-            jobs.transition(id, Job.Status.PROCESSING, Job.Status.COMPLETED, null);
-            log.info("jobId={} status=COMPLETED", id);
         } catch (Exception e) {
             log.warn("jobId={} processing failed", id, e);
-            jobs.transition(id, Job.Status.PROCESSING, Job.Status.FAILED, "Job processing failed; inspect server logs for details");
+            try { jobs.transition(id, Job.Status.PROCESSING, Job.Status.FAILED, "Job processing failed; inspect server logs for details"); }
+            catch (MetadataUnavailableException failure) { log.warn("jobId={} failure status could not be confirmed", id, failure); }
+            return;
         }
+        // Result storage and metadata are separate writes. Do not label a saved report as a processing failure.
+        try {
+            if (jobs.transition(id, Job.Status.PROCESSING, Job.Status.COMPLETED, null)) log.info("jobId={} status=COMPLETED", id);
+            else log.warn("jobId={} completion rejected; reconciliation required", id);
+        } catch (MetadataUnavailableException e) { log.warn("jobId={} completion could not be confirmed; reconciliation required", id, e); }
     }
 }

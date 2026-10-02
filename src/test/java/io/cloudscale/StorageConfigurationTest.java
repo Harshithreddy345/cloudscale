@@ -28,13 +28,13 @@ class StorageConfigurationTest {
     }
 
     @Test void missingS3BucketFailsAtStartup() {
-        runner.withPropertyValues("cloudscale.storage=s3", "cloudscale.s3.region=us-east-1").run(context ->
+        runner.withPropertyValues("cloudscale.storage=s3", "cloudscale.s3.region=us-east-1", "cloudscale.s3.bucket=").run(context ->
                 assertThat(context.getStartupFailure()).hasRootCauseInstanceOf(IllegalArgumentException.class)
                         .hasStackTraceContaining("cloudscale.s3.bucket is required"));
     }
 
     @Test void missingS3RegionFailsAtStartup() {
-        runner.withPropertyValues("cloudscale.storage=s3", "cloudscale.s3.bucket=test-bucket").run(context ->
+        runner.withPropertyValues("cloudscale.storage=s3", "cloudscale.s3.bucket=test-bucket", "cloudscale.s3.region=").run(context ->
                 assertThat(context.getStartupFailure()).hasRootCauseInstanceOf(IllegalArgumentException.class)
                         .hasStackTraceContaining("cloudscale.s3.region is required"));
     }
