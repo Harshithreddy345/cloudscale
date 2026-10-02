@@ -1,0 +1,5 @@
+order_id,customer_id,product,category,quantity,price,region,date
+1001,C101,Laptop,Electronics,1,899.99,New York,2026-01-15
+1002,C102,Headphones,Electronics,2,79.99,Texas,2026-01-15
+1003,C101,Desk,Furniture,1,120.00,Texas,2026-02-01
+1004,C103,Invalid,Other,-1,5.00,Texas,2026-02-01
