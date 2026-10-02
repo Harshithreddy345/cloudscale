@@ -1,11 +1,13 @@
 package io.cloudscale;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.io.*;
 import java.nio.file.*;
 import java.util.UUID;
 
 @Component
+@ConditionalOnProperty(name = "cloudscale.storage", havingValue = "local", matchIfMissing = true)
 public class LocalFileStore implements FileStore {
     private final Path root;
     public LocalFileStore(@Value("${cloudscale.storage-root:data}") String root) throws IOException {

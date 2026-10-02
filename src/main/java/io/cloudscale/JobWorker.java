@@ -19,7 +19,7 @@ public class JobWorker {
             log.info("jobId={} status=COMPLETED", id);
         } catch (Exception e) {
             log.warn("jobId={} processing failed", id, e);
-            jobs.transition(id, Job.Status.PROCESSING, Job.Status.FAILED, "Unable to process CSV; check headers and format");
+            jobs.transition(id, Job.Status.PROCESSING, Job.Status.FAILED, "Job processing failed; inspect server logs for details");
         }
     }
 }
