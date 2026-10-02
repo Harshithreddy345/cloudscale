@@ -1,26 +1,17 @@
-# Phase 1 verification â€” 2026-10-02
+# Phase 1 verification — 2026-10-02
 
 ## Passed
 
-The compiled Spring Boot application was launched with Java 21.0.12.1 and its Maven-resolved dependency classpath. A live HTTP smoke check passed:
+GitHub Actions [run 36964320227](https://github.com/Harshithreddy345/cloudscale/actions/runs/36964320227) at commit `2d6d164` ran `bash ./mvnw --batch-mode verify` with Java 21 successfully. The logs report **4 tests, 0 failures, 0 errors, 0 skipped** and **BUILD SUCCESS**, including executable Spring Boot JAR packaging.
 
-- Multipart upload returned 202 and a job ID.
-- The sample job reached COMPLETED.
-- Downloaded CSV contained revenue 1179.97, three valid rows, and one invalid row.
-- Wrong headers produced a FAILED job.
-- A failed job's result returned 409.
-- An unknown job returned 404.
-- An invalid UUID returned 400.
-- Listing jobs returned the submitted jobs.
+The automated tests cover completed-job report totals, invalid rows, failed headers, result conflicts, missing jobs, empty uploads, invalid UUIDs, job listing, and duplicate state claims.
 
-These checks establish local API behavior, not capacity or distributed reliability.
+A prior local live HTTP smoke check also passed: multipart upload (202), completed report download with revenue 1179.97 and one invalid row, failed headers, unavailable result (409), missing job (404), invalid UUID (400), and job listing.
 
-## Unverified
+These checks verify local API behavior; they do not measure capacity or distributed reliability.
 
-`mvn verify` did not pass in the Codex Windows execution environment. Java's compiler raised AccessDeniedException while resolving dependency archive paths; `mvn clean` also failed to remove the build directory. Main application class files were generated, and the live HTTP checks above ran successfully, but JUnit tests were not executed. Re-run `./mvnw.cmd verify` in a normal local terminal or inspect the first GitHub Actions run before treating CI as verified.
+## Pending
 
-Docker is not running here, so the Docker image has not been built. GitHub Actions has not run. No AWS resources, Terraform configuration, durable retries, scaling, or monitoring integrations are implemented.
+Docker has not been built or run. No AWS resources, Terraform configuration, durable retries, distributed scaling, or CloudWatch integrations are implemented. The current application uses one process, local files, and volatile metadata.
 
-GitHub repository: https://github.com/Harshithreddy345/cloudscale. The user signed in and repository creation succeeded. Files are being committed through the GitHub browser interface because local Git metadata writes are blocked. GitHub Actions verification is pending until the complete source tree and workflow are published.
-
-The original local scaffold commit is `8d5b2f0`. Local `.git/index.lock` writes are blocked, so the local Git history is not synchronized with the browser-created GitHub history. After publishing, use a fresh clone for further development to avoid merging the two unrelated initial histories.
+The Codex Windows environment denied Java dependency path resolution and local Git metadata writes. GitHub CI resolved the build-verification blocker. Files were published through the authenticated GitHub browser interface with milestone commits. A fresh clone of https://github.com/Harshithreddy345/cloudscale is the canonical Git history; the original draft repository has an unrelated initial history and should not be pushed over it.
