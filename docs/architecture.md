@@ -2,7 +2,7 @@
 
 Client -> JobController -> FileStore + JobRepository -> JobDispatcher -> JobWorker -> SalesProcessor.
 
-The controller handles HTTP and upload validation. The processor knows CSV business rules, not HTTP or AWS. Three interfaces isolate infrastructure: FileStore (future S3), JobRepository (future DynamoDB), and JobDispatcher (future SQS). The worker can move into its own deployable application later; this milestone deliberately has one process.
+The controller handles HTTP and upload validation. The processor knows CSV business rules, not HTTP or AWS. Three interfaces isolate infrastructure: FileStore (local files or optional S3), JobRepository (future DynamoDB), and JobDispatcher (future SQS). The worker can move into its own deployable application later; this milestone deliberately has one process. See `s3.md` for the implemented S3 adapter and the pending live AWS check.
 
 ## Decisions to explain
 
