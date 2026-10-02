@@ -1,8 +1,10 @@
 # CloudScale
 
+[![Java verification](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml/badge.svg)](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml)
+
 An incremental Java project for asynchronous sales CSV reporting. Phase 1 uses one Spring Boot process, in-memory job metadata, local files, and a bounded local executor. AWS services are planned, not implemented.
 
-Requires Java 21. The Maven wrapper pins Maven 3.9.9: run `./mvnw verify`, then `./mvnw spring-boot:run` (Windows: `./mvnw.cmd`). In this workspace, `./run-local.ps1 -Verify` and `./run-local.ps1` also find the downloaded portable tools.
+Requires Java 21. The Maven wrapper pins Maven 3.9.9: run `sh ./mvnw verify`, then `sh ./mvnw spring-boot:run` (Windows: `./mvnw.cmd`). In this workspace, `./run-local.ps1 -Verify` and `./run-local.ps1` also find the downloaded portable tools.
 
 ## API walkthrough
 
@@ -28,4 +30,4 @@ Restarting loses metadata and pending jobs. Local files remain but are not recov
 
 See `docs/architecture.md` for interview explanations. No throughput or latency claims have been measured.
 
-See `docs/verification.md` for the live HTTP checks that passed and the Maven, Docker, and GitHub checks still pending. All input prices are assumed to use one currency; currency conversion is outside this milestone.
+See `docs/verification.md` for the passing live HTTP checks and GitHub Actions build (4 tests passed). Docker and AWS deployment remain pending. All input prices are assumed to use one currency; currency conversion is outside this milestone.
