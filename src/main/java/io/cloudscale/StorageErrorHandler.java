@@ -11,6 +11,12 @@ import org.slf4j.LoggerFactory;
 @RestControllerAdvice
 public class StorageErrorHandler {
     private static final Logger log = LoggerFactory.getLogger(StorageErrorHandler.class);
+    @ExceptionHandler(QueueUnavailableException.class)
+    public ProblemDetail queueUnavailable(QueueUnavailableException failure) {
+        log.warn("Job dispatch could not be confirmed", failure);
+        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
+                "Job queue is unavailable. Submission may have been accepted; inspect the job listing before retrying.");
+    }
     @ExceptionHandler(MetadataUnavailableException.class)
     public ProblemDetail metadataUnavailable(MetadataUnavailableException failure) {
         log.warn("Job metadata request failed", failure);

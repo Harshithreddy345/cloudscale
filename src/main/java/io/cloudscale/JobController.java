@@ -2,6 +2,7 @@ package io.cloudscale;
 
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.util.*;
 import java.util.concurrent.RejectedExecutionException;
 
 @RestController
+@ConditionalOnProperty(name = "cloudscale.api.enabled", havingValue = "true", matchIfMissing = true)
 @RequestMapping("/jobs")
 public class JobController {
     private final JobRepository jobs;

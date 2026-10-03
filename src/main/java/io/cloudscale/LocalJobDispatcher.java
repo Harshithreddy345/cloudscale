@@ -1,10 +1,12 @@
 package io.cloudscale;
 import org.springframework.stereotype.Component;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.beans.factory.DisposableBean;
 import java.util.UUID;
 import java.util.concurrent.*;
 
 @Component
+@ConditionalOnProperty(name = "cloudscale.dispatch", havingValue = "local", matchIfMissing = true)
 public class LocalJobDispatcher implements JobDispatcher, DisposableBean {
     private final ThreadPoolExecutor executor = new ThreadPoolExecutor(2, 2, 0, TimeUnit.SECONDS,
             new ArrayBlockingQueue<>(100), new ThreadPoolExecutor.AbortPolicy());

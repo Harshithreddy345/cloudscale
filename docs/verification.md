@@ -54,3 +54,7 @@ Docker has not been built or run. The S3 adapter passed the live API check above
 
 The Codex Windows environment denied Java dependency path resolution and local Git metadata writes. GitHub CI resolved the build-verification blocker. Files were published through the authenticated GitHub browser interface with milestone commits. A fresh clone of https://github.com/Harshithreddy345/cloudscale is the canonical Git history; the original draft repository has an unrelated initial history and should not be pushed over it.
 
+
+## Live SQS milestone — 2026-10-03 UTC
+
+All 42 tests passed with zero failures, errors, or skipped tests. API process 1340 submitted job 90a67821-5284-4c9d-995b-9c112f9a7f9a without a worker. After restarting as process 3592, the job remained QUEUED. Separate worker process 2872 completed the report. Two duplicate deliveries were acknowledged without changing job metadata or report bytes. Invalid CSV reached FAILED. A malformed message reached the configured dead-letter queue after redelivery. The automated verifier saved evidence in cloudscale-sqs-verification.json outside the repository. These checks ran locally against real AWS storage and queues; ECS deployment and processing-crash recovery remain pending.

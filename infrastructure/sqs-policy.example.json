@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ApiPublish",
+      "Effect": "Allow",
+      "Action": "sqs:SendMessage",
+      "Resource": "arn:aws:sqs:us-east-2:YOUR_ACCOUNT_ID:cloudscale-jobs"
+    },
+    {
+      "Sid": "WorkerConsume",
+      "Effect": "Allow",
+      "Action": ["sqs:ReceiveMessage", "sqs:DeleteMessage"],
+      "Resource": "arn:aws:sqs:us-east-2:YOUR_ACCOUNT_ID:cloudscale-jobs"
+    }
+  ]
+}
