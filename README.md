@@ -1,7 +1,5 @@
 # CloudScale
 
-[![Java verification](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml/badge.svg)](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml)
-
 An incremental Java project for asynchronous sales CSV reporting. The default local mode uses in-memory metadata and a bounded executor. Optional AWS profiles use S3 for files, DynamoDB for durable job metadata, and SQS with a separate worker process. Live S3, DynamoDB restart, and SQS delivery checks have passed. A live ECS/Fargate deployment test passed, and both demo services were stopped afterward.
 
 Requires Java 21. The Maven wrapper pins Maven 3.9.9: run `sh ./mvnw verify`, then `sh ./mvnw spring-boot:run` (Windows: `./mvnw.cmd`). In this workspace, `./run-local.ps1 -Verify` and `./run-local.ps1` also find the downloaded portable tools.
@@ -33,8 +31,3 @@ See `docs/architecture.md` for interview explanations. No throughput or latency 
 See `docs/verification.md` for completed checks and pending verification. Docker local verification passed; The AWS compute demo passed and is stopped; image storage, logs and data resources remain. All input prices are assumed to use one currency; currency conversion is outside this milestone.
 
 
-
-
-## Presenting the project
-
-See [demo guide](docs/demo-guide.md), [architecture and tradeoffs](docs/architecture.md), and [resume and interview wording](docs/resume-and-interview.md). Java verification succeeded for deployed milestone f4f35e8 in [GitHub Actions](https://github.com/Harshithreddy345/cloudscale/actions/runs/37094908428).
