@@ -26,7 +26,7 @@ In default local mode, restarting loses metadata and pending jobs. AWS profiles 
 3. DynamoDB metadata with atomic status claims: 29 tests and live restart verification passed. See [DynamoDB decisions and limitations](docs/dynamodb.md). Recovery leases are future work.
 4. SQS dispatch and separate worker: 42 tests and live API restart, duplicate delivery, failed CSV, and dead-letter checks passed. See [delivery guarantees and limits](docs/sqs.md).
 5. Docker image build and local container API/report verification passed with 42 tests. Private ECR upload, ECS/Fargate API and worker, and CloudWatch completion verification passed. Both services are stopped. Measured load experiments remain pending.
-6. Terraform and deployment through GitHub Actions using OIDC.
+6. Terraform compute deployment verified; automated deployment through GitHub Actions using OIDC remains future work.
 
 See `docs/architecture.md` for interview explanations. No throughput or latency claims have been measured.
 
@@ -34,3 +34,7 @@ See `docs/verification.md` for completed checks and pending verification. Docker
 
 
 
+
+## Presenting the project
+
+See [demo guide](docs/demo-guide.md), [architecture and tradeoffs](docs/architecture.md), and [resume and interview wording](docs/resume-and-interview.md). Java verification succeeded for deployed milestone f4f35e8 in [GitHub Actions](https://github.com/Harshithreddy345/cloudscale/actions/runs/37094908428).

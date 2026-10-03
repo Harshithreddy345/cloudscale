@@ -1,29 +1,57 @@
-# Phase 1 architecture and interview notes
+# CloudScale architecture and interview notes
 
-Client -> JobController -> FileStore + JobRepository -> JobDispatcher -> JobWorker -> SalesProcessor.
+CloudScale processes sales CSV uploads outside the HTTP request. In the AWS demo, the API and worker run as separate ECS/Fargate services using the same Docker image and different Spring profiles.
 
-The controller handles HTTP and upload validation. The processor knows CSV business rules, not HTTP or AWS. Three interfaces isolate infrastructure: FileStore (local files or optional S3), JobRepository (future DynamoDB), and JobDispatcher (future SQS). The worker can move into its own deployable application later; this milestone deliberately has one process. See `s3.md` for the implemented S3 adapter and the pending live AWS check.
+```mermaid
+flowchart LR
+    U[Client] --> A[Spring Boot API]
+    A --> S[S3 uploads]
+    A --> D[DynamoDB job metadata]
+    A --> Q[SQS job IDs]
+    Q --> W[Separate worker]
+    W --> S
+    W --> D
+    W --> R[S3 reports]
+    A --> R
+    Q --> F[Dead-letter queue]
+    A --> L[CloudWatch logs]
+    W --> L
+```
 
-## Decisions to explain
+## Request lifecycle
 
-- 202 Accepted means processing was scheduled, not completed. A snapshot of QUEUED is returned even if a small job finishes quickly. Poll the status endpoint for current state.
-- Two local worker threads and a queue of 100 prevent unlimited thread creation. Queue rejection returns 503 and records a failed job. These are configuration choices, not measured capacity claims.
-- Immutable job snapshots and an atomic map update avoid races between readers and worker state transitions in this single JVM.
-- UUID storage keys prevent uploaded filenames from controlling filesystem paths.
-- Commons CSV handles quoted fields correctly. Rows are read incrementally; aggregation memory still grows with distinct products/categories/regions/months. Reports are currently buffered in memory. Uploads are capped at 10MB.
-- BigDecimal preserves decimal prices. Valid transaction lines are counted, not distinct orders. Invalid rows are counted; an invalid-row download, top-product ranking, and customer statistics remain follow-up work.
-- The state claim prevents duplicate local execution after a job leaves QUEUED. It does not provide exactly-once distributed processing.
+POST /jobs accepts a multipart file, saves it under a UUID key, creates QUEUED metadata, publishes its ID, and returns HTTP 202. A worker receives the ID and conditionally changes QUEUED to PROCESSING. It reads the CSV, saves a report, and conditionally records COMPLETED. Processing errors attempt to record FAILED. The consumer deletes a message only after confirming a terminal state. GET /jobs/{id} reports status; GET /jobs/{id}/result returns the report or HTTP 409 until completion.
 
-## AWS correctness work still required
+FileStore, JobRepository and JobDispatcher separate business logic from storage and delivery. Default local implementations make development possible without AWS. S3, DynamoDB and SQS adapters enable the cloud path. SalesProcessor knows CSV rules rather than HTTP or AWS.
 
-Saving an object, writing metadata, and sending an SQS message are not one transaction. Plan an outbox or reconciliation strategy so jobs are not stranded when dispatch fails. A PROCESSING flag alone is insufficient after a crash: add leases, attempt identifiers, conditional ownership updates, visibility extensions, and retry recovery. Publish results under deterministic keys and mark completion only after upload succeeds. Delete SQS messages only after the durable completion update. Validate these failure paths with tests before claiming reliability.
+## Decisions and tradeoffs
 
-Local metadata grows without pagination or retention and disappears on restart. No tenant isolation, authentication, durable retries, AWS deployment, or performance experiments are implemented.
+- HTTP 202 confirms submission, not completion. Polling keeps a long computation out of the request.
+- S3 stores file bytes; DynamoDB stores small job metadata. This separates object storage from status queries.
+- SQS absorbs submissions independently of worker availability. Standard queues can deliver duplicates, so the DynamoDB claim uses a conditional update.
+- Completed/failed duplicate deliveries are acknowledged without processing again. An in-progress duplicate is retained. This is not an exactly-once guarantee.
+- Execution-role permissions let ECS pull images and publish logs. Separate API and worker task roles permit only their storage, metadata and queue operations. Credentials come from task roles, not embedded access keys.
+- UUID keys prevent uploaded filenames from choosing storage paths. API filenames are reduced to a basename.
+- BigDecimal preserves decimal prices. Each valid row is a transaction line, not necessarily a distinct order. The sample totals 899.99 + 159.98 + 120.00 = 1179.97.
+- Commons CSV reads rows incrementally and handles quoting. Aggregation memory grows with distinct group keys; reports are buffered in memory. Uploads are capped at 10 MB. This is not a verified big-data engine.
+- DynamoDB listing uses a paginated Scan internally, collects results, then sorts them. This is suitable for the demo; a production listing needs access-pattern indexes and client pagination.
+- Terraform owns compute/network/IAM/log resources. Existing S3, DynamoDB and queues were created manually and referenced as data sources. The full data layer is not reproducible through this configuration yet.
 
-## Learning walkthrough
+## Reliability limits to explain honestly
 
-1. Read JobController.create and trace the saved file, metadata, dispatch, and response.
-2. Read JobWorker.process and explain each failure point and state change.
-3. Read SalesProcessor and manually calculate the sample revenue: 899.99 + 159.98 + 120.00 = 1179.97.
-4. Run the tests, then upload the sample and a CSV with wrong headers.
-5. Explain what is lost if the JVM terminates, then describe how durable storage and a queue will change that behavior.
+S3 upload, metadata creation and SQS publication are separate writes. If publication fails, the API returns a generic 503 and the job may remain QUEUED; an outbox or reconciliation process is needed. A worker crash after its claim can strand PROCESSING work. The current implementation has no ownership lease, heartbeat, visibility extension or attempt fencing. Unresolved messages can reach the DLQ; reaching the DLQ does not repair metadata automatically. Invalid CSV processing becomes terminal FAILED and is acknowledged rather than retried indefinitely. Completion-write outages retain the message without falsely marking a saved report as failed.
+
+The demo uses one subnet and IP-restricted HTTP. Authentication, TLS, tenant isolation, autoscaling, alarms, load testing and automatic deployment through GitHub Actions OIDC remain future work. CloudWatch logs and GitHub Actions Java verification are implemented. No throughput, latency or uptime results are claimed.
+
+## Verified evidence
+
+42 tests passed locally and during the Docker build. Live S3 report retrieval, DynamoDB persistence across a process restart, SQS duplicate delivery and DLQ redrive, separate API/worker execution, ECS report processing and CloudWatch completion logging passed. Both ECS services were stopped after the demo. See verification.md for concrete jobs, dates and boundaries.
+
+## Interview walkthrough
+
+1. Trace JobController.create from input validation to the 202 response.
+2. Explain JobWorker.process and the conditional status claim.
+3. Explain why SqsJobConsumer acknowledges only confirmed terminal jobs.
+4. Describe what happens when publication fails or a worker crashes after claiming a job.
+5. Explain how task roles differ from execution roles, and which resources Terraform owns.
+6. Show the sample report and test evidence; explain which measurements were not made.
