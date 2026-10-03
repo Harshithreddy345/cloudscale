@@ -48,7 +48,7 @@ These checks verify local API behavior; they do not measure capacity or distribu
 
 
 
-Docker has not been built or run. The S3 adapter passed the live API check above. A private bucket and IAM user/policy were created manually in AWS, not through Terraform. Terraform deployment, durable retries, distributed scaling, and CloudWatch integrations remain pending. The application runs as one local process with volatile metadata; compute has not been deployed to AWS.
+Docker build and local runtime verification passed, as detailed below. The S3 adapter passed the live API check above. A private bucket and IAM user/policy were created manually in AWS, not through Terraform. Terraform compute deployment and CloudWatch log verification passed as detailed below. Processing-crash recovery and automatic distributed scaling remain pending. The default local profile uses volatile metadata. The verified AWS profiles run the API and worker as separate local processes with durable storage; ECS compute deployment passed and services were stopped after verification.
 
 
 
@@ -58,3 +58,15 @@ The Codex Windows environment denied Java dependency path resolution and local G
 ## Live SQS milestone — 2026-10-03 UTC
 
 All 42 tests passed with zero failures, errors, or skipped tests. API process 1340 submitted job 90a67821-5284-4c9d-995b-9c112f9a7f9a without a worker. After restarting as process 3592, the job remained QUEUED. Separate worker process 2872 completed the report. Two duplicate deliveries were acknowledged without changing job metadata or report bytes. Invalid CSV reached FAILED. A malformed message reached the configured dead-letter queue after redelivery. The automated verifier saved evidence in cloudscale-sqs-verification.json outside the repository. These checks ran locally against real AWS storage and queues; ECS deployment and processing-crash recovery remain pending.
+
+## Docker verification — 2026-10-03 UTC
+
+The multi-stage Docker build completed with 42 tests, zero failures, errors, or skipped tests. A Linux container ran as user 10001:10001 with a localhost-only host port. Upload returned HTTP 202; job 4c621111-0e77-49ab-8463-b2419e9f814f completed, appeared in the job listing, and produced the fixture totals of 3 valid rows, 1 invalid row, and revenue 1179.97. Missing upload returned HTTP 400. The verifier removed only its own test container and retained the image. This check used local storage and in-memory metadata with no AWS credentials; it does not verify ECS or container-to-AWS authentication. Evidence was saved outside the repository in cloudscale-docker-verification.json.
+
+
+
+## Live ECS/Fargate and CloudWatch - 2026-10-03 UTC
+
+Terraform provider validation passed. The compute plan created 21 resources with separate execution, API and worker roles. The verified image was pushed to private ECR with digest sha256:5322456944085cf438fcb0dc93971f23b32116d1fc66b9c263b1269f1a54430f. One API task and one worker task reached RUNNING. Upload returned HTTP 202 and job 2291288c-e692-4957-b7b3-05d42136a230 completed with 3 valid rows, 1 invalid row and revenue 1179.97. CloudWatch recorded worker completion and an API log stream existed. Terraform then set both services to zero; AWS confirmed desired, running and pending counts were zero at 2026-10-03T03:55:13Z. Evidence and report are outside Git in cloudscale-ecs-verification.json and cloudscale-ecs-report.csv.
+
+The demo uses one subnet and a changing public task IP with source-IP-restricted HTTP. TLS, API authentication, processing leases, outbox recovery, autoscaling, alarms, load testing, and full data-layer Terraform ownership remain future work. No throughput or latency claims were measured. Image storage, logs and existing data resources remain and may consume credits despite compute being stopped.

@@ -2,7 +2,7 @@
 
 [![Java verification](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml/badge.svg)](https://github.com/Harshithreddy345/cloudscale/actions/workflows/ci.yml)
 
-An incremental Java project for asynchronous sales CSV reporting. The default local mode uses in-memory metadata and a bounded executor. Optional AWS profiles use S3 for files, DynamoDB for durable job metadata, and SQS with a separate worker process. Live S3, DynamoDB restart, and SQS delivery checks have passed. Compute deployment is pending.
+An incremental Java project for asynchronous sales CSV reporting. The default local mode uses in-memory metadata and a bounded executor. Optional AWS profiles use S3 for files, DynamoDB for durable job metadata, and SQS with a separate worker process. Live S3, DynamoDB restart, and SQS delivery checks have passed. A live ECS/Fargate deployment test passed, and both demo services were stopped afterward.
 
 Requires Java 21. The Maven wrapper pins Maven 3.9.9: run `sh ./mvnw verify`, then `sh ./mvnw spring-boot:run` (Windows: `./mvnw.cmd`). In this workspace, `./run-local.ps1 -Verify` and `./run-local.ps1` also find the downloaded portable tools.
 
@@ -25,10 +25,12 @@ In default local mode, restarting loses metadata and pending jobs. AWS profiles 
 2. S3 file storage adapter: implemented and verified against a private AWS bucket. See [S3 setup and decisions](docs/s3.md).
 3. DynamoDB metadata with atomic status claims: 29 tests and live restart verification passed. See [DynamoDB decisions and limitations](docs/dynamodb.md). Recovery leases are future work.
 4. SQS dispatch and separate worker: 42 tests and live API restart, duplicate delivery, failed CSV, and dead-letter checks passed. See [delivery guarantees and limits](docs/sqs.md).
-5. Docker, ECR, ECS/Fargate, CloudWatch and measured load experiments.
+5. Docker image build and local container API/report verification passed with 42 tests. Private ECR upload, ECS/Fargate API and worker, and CloudWatch completion verification passed. Both services are stopped. Measured load experiments remain pending.
 6. Terraform and deployment through GitHub Actions using OIDC.
 
 See `docs/architecture.md` for interview explanations. No throughput or latency claims have been measured.
 
-See `docs/verification.md` for completed checks and pending verification. Docker and AWS deployment remain pending. All input prices are assumed to use one currency; currency conversion is outside this milestone.
+See `docs/verification.md` for completed checks and pending verification. Docker local verification passed; The AWS compute demo passed and is stopped; image storage, logs and data resources remain. All input prices are assumed to use one currency; currency conversion is outside this milestone.
+
+
 

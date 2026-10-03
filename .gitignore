@@ -5,3 +5,7 @@ data/
 .env
 *.tfstate*
 .terraform/
+
+*.tfplan
+*.tfvars
+*.tfvars.json

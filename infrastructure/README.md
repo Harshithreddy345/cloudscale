@@ -1,3 +1,1 @@
-# Planned Terraform infrastructure
-
-No AWS resources are provisioned by this milestone. Add S3, DynamoDB, SQS/DLQ, ECS/Fargate, IAM, and CloudWatch incrementally after local verification. Define cost controls and teardown before deploying. Never commit credentials or Terraform state.
+Terraform compute deployment under terraform/ passed live ECS/Fargate and CloudWatch verification. Both services are stopped. Existing S3, DynamoDB and SQS resources were created manually and remain outside Terraform ownership. State is stored outside the repository. See terraform/README.md for deployment stages, permissions, costs and teardown.
